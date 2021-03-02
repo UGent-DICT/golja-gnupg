@@ -7,6 +7,9 @@
   "source": "git://github.com/n1tr0g/golja-gnupg.git",
   "project_page": "https://github.com/n1tr0g/golja-gnupg",
   "issues_url": "https://github.com/n1tr0g/golja-gnupg/issues",
+  "dependencies": [
+
+  ],
   "operatingsystem_support": [
     {
       "operatingsystem": "RedHat",
@@ -61,7 +64,7 @@
     "gnupg",
     "pgp"
   ],
-  "dependencies": [
-  
-  ]
+  "pdk-version": "1.18.1",
+  "template-url": "https://github.com/puppetlabs/pdk-templates#1.18.1",
+  "template-ref": "tags/1.18.1-0-g3d2e75c"
 }
