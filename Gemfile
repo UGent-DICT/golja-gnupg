@@ -29,6 +29,13 @@ group :development do
   gem "puppet-module-win-default-r#{minor_version}", '~> 0.4',   require: false, platforms: [:mswin, :mingw, :x64_mingw]
   gem "puppet-module-win-dev-r#{minor_version}", '~> 0.4',       require: false, platforms: [:mswin, :mingw, :x64_mingw]
 end
+group :system_tests do
+  gem "beaker",              require: false
+  gem "beaker-rspec",        require: false
+  gem "rspec-system-puppet", require: false
+  gem "beaker-vagrant",      require: false
+  gem "beaker-docker",       require: false
+end
 
 puppet_version = ENV['PUPPET_GEM_VERSION']
 facter_version = ENV['FACTER_GEM_VERSION']

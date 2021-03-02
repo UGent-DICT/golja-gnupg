@@ -1,0 +1,12 @@
+---
+Gemfile:
+  optional:
+    ':system_tests':
+      - gem: 'beaker'
+      - gem: 'beaker-rspec'
+      - gem: 'rspec-system-puppet'
+      - gem: 'beaker-vagrant'
+      - gem: 'beaker-docker'
+
+.travis.yml:
+  use_litmus: true
