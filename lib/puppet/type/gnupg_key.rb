@@ -30,7 +30,7 @@ Puppet::Type.newtype(:gnupg_key) do
                            'much to learn, you still have.'
     end
 
-    if creator_count == 0 && self[:ensure] == :present
+    if creator_count.zero? && self[:ensure] == :present
       raise ArgumentError, "You need to specify at least one of #{KEY_SOURCES.map { |p| p.to_s }.join(', ')}, " \
                            'much to learn, you still have.'
     end

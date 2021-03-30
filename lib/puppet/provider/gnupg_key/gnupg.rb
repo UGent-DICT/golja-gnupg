@@ -28,7 +28,7 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
     begin
       fingerprint_command = "gpg --fingerprint --with-colons #{resource[:key_id]} | awk -F: '$1 == \"fpr\" {print $10;}'"
       fingerprint = Puppet::Util::Execution.execute(fingerprint_command, uid: user_id, custom_environment: gpgenv(resource))
-    rescue Puppet::ExecutionFailure => e
+    rescue Puppet::ExecutionFailure
       raise Puppet::Error, "Could not determine fingerprint for  #{resource[:key_id]} for user #{resource[:user]}: #{fingerprint}"
     end
 
@@ -42,7 +42,7 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
 
     begin
       output = Puppet::Util::Execution.execute(command, uid: user_id, custom_environment: gpgenv(resource))
-    rescue Puppet::ExecutionFailure => e
+    rescue Puppet::ExecutionFailure
       raise Puppet::Error, "Could not remove #{resource[:key_id]} for user #{resource[:user]}: #{output}"
     end
   end
@@ -66,8 +66,8 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
                 "gpg --keyserver #{resource[:key_server]} --keyserver-options http-proxy=#{resource[:proxy]} --recv-keys #{resource[:key_id]}"
               end
     begin
-      output = Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
-    rescue Puppet::ExecutionFailure => e
+      Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
+    rescue Puppet::ExecutionFailure
       raise Puppet::Error, "Key #{resource[:key_id]} does not exist on #{resource[:key_server]}"
     end
   end
@@ -85,21 +85,20 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
     command = "gpg --import #{path}"
     begin
       output = Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
-    rescue Puppet::ExecutionFailure => e
+    rescue Puppet::ExecutionFailure
       raise Puppet::Error, "Error while importing key #{resource[:key_id]} using key content:\n#{output}}"
     end
   end
 
   def add_key_at_path
-    if File.file?(resource[:key_source])
-      command = "gpg --import #{resource[:key_source]}"
-      begin
-        output = Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
-      rescue Puppet::ExecutionFailure => e
-        raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}"
-      end
-    elsif
+    unless File.file?(resource[:key_source])
       raise Puppet::Error, "Local file #{resource[:key_source]} for #{resource[:key_id]} does not exists"
+    end
+    command = "gpg --import #{resource[:key_source]}"
+    begin
+      Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
+    rescue Puppet::ExecutionFailure
+      raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}"
     end
   end
 
@@ -116,14 +115,14 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
     end
     begin
       output = Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
-    rescue Puppet::ExecutionFailure => e
+    rescue Puppet::ExecutionFailure
       raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}:\n#{output}}"
     end
   end
 
   def user_id
     Etc.getpwnam(resource[:user]).uid
-  rescue => e
+  rescue
     raise Puppet::Error, "User #{resource[:user]} does not exists"
   end
 
@@ -139,10 +138,11 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
   def puppet_content
     # Look up (if necessary) and return remote content.
     return @content if @content
-    unless tmp = Puppet::FileServing::Content.indirection.find(resource[:key_source], environment: resource.catalog.environment, links: :follow)
+    file_resource = Puppet::FileServing::Content.indirection.find(resource[:key_source], environment: resource.catalog.environment, links: :follow)
+    unless file_resource
       raise 'Could not find any content at %s' % resource[:key_source]
     end
-    @content = tmp.content
+    @content = file_resource.content
   end
 
   def exists?
@@ -156,13 +156,9 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
     end
 
     output = Puppet::Util::Execution.execute(command, uid: user_id, custom_environment: gpgenv(resource))
-    if output.exitstatus == 0
-      return true
-    elsif output.exitstatus == 2
-      return false
-    else
-      raise Puppet::Error, "Non recognized exit status from GnuPG #{output.exitstatus} #{output}"
-    end
+    return true if output.exitstatus.zero?
+    return false if output.exitstatus == 2
+    raise Puppet::Error, "Non recognized exit status from GnuPG #{output.exitstatus} #{output}"
   end
 
   def create
