@@ -129,7 +129,7 @@ Puppet::Type.newtype(:gnupg_key) do
       long more accurate (but  less  convenient) 16-character key ID."
 
     validate do |value|
-      unless (value.length == 8 || value.length == 16) && value =~ %r{^[0-9A-Fa-f]+$}
+      unless ([8, 16, 40].include? value.length) && value =~ %r{^[0-9A-Fa-f]+$}
         raise ArgumentError, "Invalid key id #{value}"
       end
     end
