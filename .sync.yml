@@ -2,14 +2,13 @@
 Gemfile:
   optional:
     ':development':
-      - gem: 'beaker'
-      - gem: 'beaker-rspec'
-      - gem: 'rspec-system-puppet'
-      - gem: 'beaker-vagrant'
-      - gem: 'beaker-docker'
+      - gem: 'puppet_litmus'
 
 spec/spec_helper.rb:
   mock_with: ':rspec'
 
 .travis.yml:
   use_litmus: true
+  litmus:
+    provision_list: [travis_deb, travis_ub_6, travis_el6, travis_el7, travis_el8]
+    puppet_collection: [puppet5, puppet6, puppet7]

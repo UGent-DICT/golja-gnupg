@@ -1,4 +1,24 @@
 fixtures:
+  repositories:
+    provision: 'git://github.com/puppetlabs/provision.git'
+    facts: 'https://github.com/puppetlabs/puppetlabs-facts.git'
+    puppet_agent: 'https://github.com/puppetlabs/puppetlabs-puppet_agent.git'
+  forge_modules:
+    inifile:
+      repo: "puppetlabs-inifile"
+      ref: "4.1.0"
+    apt:
+      repo: "puppetlabs-apt"
+      ref: "7.3.0"
+    registry:
+      repo: "puppetlabs-registry"
+      ref: "3.1.0"
+    stdlib:
+      repo: "puppetlabs/stdlib"
+      ref: "6.0.0"
+    concat:
+      repo: "puppetlabs/concat"
+      ref: "6.1.0"
   symlinks:
     gnupg: "#{source_dir}"
 
