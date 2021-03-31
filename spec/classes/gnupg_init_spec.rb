@@ -8,7 +8,7 @@ describe 'gnupg', type: :class do
       let(:facts) { { osfamily: system } }
     end
 
-    it { expect contain_class('gnupg::install') }
+    it { is_expected.to contain_class('gnupg::install') }
 
     describe "gnupg on system #{system}" do
       context 'when enabled' do
@@ -20,7 +20,7 @@ describe 'gnupg', type: :class do
         end
 
         it {
-          expect contain_package('gnupg').with('ensure' => 'present')
+          is_expected.to contain_package('gnupg').with('ensure' => 'present')
         }
       end
 
@@ -33,7 +33,7 @@ describe 'gnupg', type: :class do
         end
 
         it {
-          expect contain_package('gnupg').with('ensure' => 'absent')
+          is_expected.to contain_package('gnupg').with('ensure' => 'absent')
         }
       end
     end

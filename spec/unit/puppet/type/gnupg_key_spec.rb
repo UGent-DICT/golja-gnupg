@@ -2,7 +2,7 @@ require 'puppet'
 require 'puppet/type/gnupg_key'
 describe Puppet::Type.type(:gnupg_key) do
   let(:gnupg_key) do
-     Puppet::Type.type(:gnupg_key).new(name: 'foo')
+    Puppet::Type.type(:gnupg_key).new(name: 'foo')
   end
 
   it 'accepts a user' do
