@@ -119,7 +119,7 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
         raise Puppet::ExecutionFailure
       end
     rescue Puppet::ExecutionFailure
-      raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}:\n#{output}}"
+      raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}:\n#{e}"
     end
   end
 
