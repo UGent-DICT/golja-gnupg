@@ -1,3 +1,11 @@
+2021-04-01 - Jan Vansteenkiste <jan@vstone.eu> - 2.0.0
+* Drop support for puppet < 6
+* Merge multiple pull requests:
+  * pr/35: Use ensure_packages to prevent conflicts
+  * pr/33: Display the executed command on failure
+  * pr/26: Allow full 40 char fingerprints  + Use batch import to prevent interactive prompts
+* Conversion for acceptance tests to puppet litmus
+
 2016-01-22 - Dejan Golja <dejan@golja.org> - 1.2.3
 * Another retry to rebuild repack the module to fix the PaxHeaders bsd tar bug
 
