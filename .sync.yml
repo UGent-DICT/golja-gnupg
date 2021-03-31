@@ -1,14 +1,34 @@
 ---
-Gemfile:
-  optional:
-    ':development':
-      - gem: 'puppet_litmus'
-
 spec/spec_helper.rb:
   mock_with: ':rspec'
 
 .travis.yml:
+  includes:
+    - env: PUPPET_GEM_VERSION="~> 7.0" CHECK=parallel_spec
+      rvm: 2.5.7
+      stage: spec
+  branches:
+    - master
+    - develop
+    - /^v\d/
   use_litmus: true
   litmus:
-    provision_list: [travis_deb, travis_ub_6, travis_el6, travis_el7, travis_el8]
-    puppet_collection: [puppet5, puppet6, puppet7]
+    provision_list: [travis_deb, travis_el7, travis_el8, ---travis_el]
+    puppet_collection: [puppet6, puppet7]
+    complex:
+      - collection:
+          puppet_collection: [puppet6, puppet7]
+          provision_list: [travis_deb]
+
+      - collection:
+          puppet_collection: [puppet6]
+          provision_list: [travis_deb_old]
+
+      - collection:
+          puppet_collection: [puppet6, puppet7]
+          provision_list: [travis_ub_6]
+
+      - collection:
+          puppet_collection: [puppet6, puppet7]
+          provision_list: [travis_el8]
+          dist: xenial

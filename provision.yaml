@@ -5,10 +5,15 @@ default:
 
 travis_deb:
   provisioner: docker
-  images: ['litmusimage/debian:8', 'litmusimage/debian:9', 'litmusimage/debian:10']
+  images: ['litmusimage/debian:9', 'litmusimage/debian:10']
+
+travis_deb_old:
+  provisioner: docker
+  images: ['litmusimage/debian:8']
+
 travis_ub_6:
   provisioner: docker
-  images: ['litmusimage/ubuntu:14.04', 'litmusimage/ubuntu:16.04', 'litmusimage/ubuntu:18.04', 'litmusimage/ubuntu:20.04']
+  images: ['litmusimage/ubuntu:16.04', 'litmusimage/ubuntu:18.04', 'litmusimage/ubuntu:20.04']
 travis_el6:
   provisioner: docker
   images: ['litmusimage/centos:6', 'litmusimage/oraclelinux:6', 'litmusimage/scientificlinux:6']
