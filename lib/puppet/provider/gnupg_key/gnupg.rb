@@ -108,13 +108,16 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
     when %r{https}
       command = "wget -O- #{resource[:key_source]} | gpg --import"
     when %r{http}
-      command = "gpg --fetch-keys #{resource[:key_source]}"
+      command = "gpg --fetch-keys #{resource[:key_source]} 2>&1"
     when 'puppet'
       path = create_temporary_file user_id, puppet_content
       command = "gpg --import #{path}"
     end
     begin
       output = Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
+      if output =~ %r{unable to fetch}
+        raise Puppet::ExecutionFailure
+      end
     rescue Puppet::ExecutionFailure
       raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}:\n#{output}}"
     end
