@@ -140,6 +140,9 @@ Then run the tests using the default nodeset and puppet7:
 
 Check the `provision.yaml` file for other sets you can use.
 
+**Note**: Tests will start to fail after 2023-03-30 (jenkins key expires).
+If this happens, please update the key used in the acceptance tests
+
 ## Limitations
 
 This module has been tested on:

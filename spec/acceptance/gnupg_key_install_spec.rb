@@ -10,17 +10,17 @@ describe 'install gnupg keys' do
     let(:pp) do
       <<-EOS
       gnupg_key { 'jenkins_key':
-        ensure     => present,
+        ensure     => 'present',
         user       => 'root',
-        key_type   => public,
-        key_source => 'http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key',
-        key_id     => 'D50582E6',
+        key_type   => 'public',
+        key_source => 'http://pkg.jenkins.io/debian/jenkins.io.key',
+        key_id     => 'FCEF32E745F2C3D5',
       }
       EOS
     end
 
     after(:each) do
-      gpg('--batch --delete-key 150FDE3F7787E7D11EF4E12A9B7D32F2D50582E6') {}
+      gpg('--batch --delete-key 62A9756BFD780C377CF24BA8FCEF32E745F2C3D5') {}
     end
 
     it 'applies cleanly' do
