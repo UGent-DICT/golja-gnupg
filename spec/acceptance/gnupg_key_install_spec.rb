@@ -2,12 +2,13 @@ require 'spec_helper_acceptance'
 
 describe 'install gnupg keys' do
   before :all do
-    pp = "class { 'gnupg': }"
-    apply_manifest(pp, catch_failures: true)
+    pp = "class { 'gnupg': } package {'wget': ensure => 'present', }"
+    idempotent_apply(pp)
   end
 
-  it 'installs a public key from a http URL address' do
-    pp = <<-EOS
+  describe 'install a public key from a http URL address' do
+    let(:pp) do
+      <<-EOS
       gnupg_key { 'jenkins_key':
         ensure     => present,
         user       => 'root',
@@ -15,19 +16,24 @@ describe 'install gnupg keys' do
         key_source => 'http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key',
         key_id     => 'D50582E6',
       }
-    EOS
-
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
-
-    # check that gnupg installed the key
-    gpg('--list-keys D50582E6') do |r|
-      expect(r.stdout).to match(%r{D50582E6})
-      expect(r.exit_code).to eq(0)
+      EOS
     end
 
-    # clean up
-    gpg('--batch --delete-key 150FDE3F7787E7D11EF4E12A9B7D32F2D50582E6') {}
+    after(:each) do
+      gpg('--batch --delete-key 150FDE3F7787E7D11EF4E12A9B7D32F2D50582E6') {}
+    end
+
+    it 'applies cleanly' do
+      idempotent_apply(pp)
+    end
+
+    it 'installed the key' do
+      # check that gnupg installed the key
+      gpg('--list-keys D50582E6') do
+        its(:stdout) { is_expected.to match %r{D50582E6} }
+        its(:exit_status) { is_expected.to eq 0 }
+      end
+    end
   end
 
   it 'installs a public key from a https URL address' do
@@ -41,13 +47,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-keys 548C16BF') do |r|
-      expect(r.stdout).to match(%r{548C16BF})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 548C16BF') do
+      its(:stdout) { is_expected.to match %r{548C16BF} }
+      its(:exit_status) { is_expected.to  eq(0) }
     end
 
     # clean up
@@ -65,13 +70,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-keys 20BC0A86') do |r|
-      expect(r.stdout).to match(%r{20BC0A86})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 20BC0A86') do
+      its(:stdout) { is_expected.to match %r{20BC0A86} }
+      its(:exit_status) { is_expected.to eq(0) }
     end
 
     # clean up
@@ -79,7 +83,7 @@ describe 'install gnupg keys' do
   end
 
   it 'deletes a public key' do
-    scp_to master, 'files/random.public.key', '/tmp/random.public.key'
+    transfer_file('files/random.public.key', '/tmp/random.public.key')
     gpg('--import /tmp/random.public.key') {}
 
     pp = <<-EOS
@@ -91,12 +95,11 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg deleted the key
-    gpg('--list-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do |r|
-      expect(r.stdout).not_to match(%r{926FA9B9})
+    gpg('--list-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do
+      its(:stdout) { is_expected.not_to match %r{926FA9B9} }
     end
   end
 
@@ -111,13 +114,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -125,7 +127,7 @@ describe 'install gnupg keys' do
   end
 
   it 'installs public key from a local file path' do
-    scp_to master, 'files/random.public.key', '/tmp/random.public.key'
+    transfer_file('files/random.public.key', '/tmp/random.public.key')
 
     pp = <<-EOS
       gnupg_key { 'add_key_by_local_file_path':
@@ -137,13 +139,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -151,7 +152,7 @@ describe 'install gnupg keys' do
   end
 
   it 'installs public key from a local file URL address' do
-    scp_to master, 'files/random.public.key', '/tmp/random.public.key'
+    transfer_file('files/random.public.key', '/tmp/random.public.key')
 
     pp = <<-EOS
       gnupg_key { 'add_key_by_local_file_url':
@@ -163,13 +164,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -189,13 +189,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -243,11 +242,11 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, expect_failures: true)
+    apply_manifest(pp, expect_failures: true, debug: true)
   end
 
   it 'installs private key from a local file path' do
-    scp_to master, 'files/random.private.key', '/tmp/random.private.key'
+    transfer_file('files/random.private.key', '/tmp/random.private.key')
 
     pp = <<-EOS
       gnupg_key { 'add_private_key_by_local_file_path':
@@ -259,13 +258,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-secret-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-secret-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -273,7 +271,7 @@ describe 'install gnupg keys' do
   end
 
   it 'installs private key from a local file URL address' do
-    scp_to master, 'files/random.private.key', '/tmp/random.private.key'
+    transfer_file('files/random.private.key', '/tmp/random.private.key')
 
     pp = <<-EOS
       gnupg_key { 'add_private_key_by_local_file_path':
@@ -285,13 +283,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-secret-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-secret-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -311,13 +308,12 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg installed the key
-    gpg('--list-secret-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-secret-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -326,7 +322,7 @@ describe 'install gnupg keys' do
 
   it 'deletes a private key' do
     # importing a private key imports the public key as well
-    scp_to master, 'files/random.private.key', '/tmp/random.private.key'
+    transfer_file('files/random.private.key', '/tmp/random.private.key')
     gpg('--import /tmp/random.private.key') {}
 
     pp = <<-EOS
@@ -338,18 +334,18 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg deleted the public key
-    gpg('--list-secret-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do |r|
-      expect(r.stdout).not_to match(%r{926FA9B9})
+    gpg('--list-secret-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do
+      its(:stdout) { is_expected.not_to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to be_one_of [0, 2] }
     end
 
     # check that gnupg left the public key
-    gpg('--list-keys 926FA9B9') do |r|
-      expect(r.stdout).to match(%r{926FA9B9})
-      expect(r.exit_code).to eq(0)
+    gpg('--list-keys 926FA9B9') do
+      its(:stdout) { is_expected.to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to eq 0 }
     end
 
     # clean up
@@ -358,7 +354,7 @@ describe 'install gnupg keys' do
 
   it 'deletes both public and private key for key_id' do
     # importing a private key imports the public key as well
-    scp_to master, 'files/random.private.key', '/tmp/random.private.key'
+    transfer_file('files/random.private.key', '/tmp/random.private.key')
     gpg('--import /tmp/random.private.key') {}
 
     pp = <<-EOS
@@ -370,17 +366,18 @@ describe 'install gnupg keys' do
       }
     EOS
 
-    apply_manifest(pp, catch_failures: true)
-    apply_manifest(pp, catch_changes: true)
+    idempotent_apply(pp)
 
     # check that gnupg deleted the public key
-    gpg('--list-secret-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do |r|
-      expect(r.stdout).not_to match(%r{926FA9B9})
+    gpg('--list-secret-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do
+      its(:stdout) { is_expected.not_to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to be_one_of [0, 2] }
     end
 
     # check that gnupg left the public key
-    gpg('--list-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do |r|
-      expect(r.stdout).not_to match(%r{926FA9B9})
+    gpg('--list-keys 926FA9B9', acceptable_exit_codes: [0, 2]) do
+      its(:stdout) { is_expected.not_to match %r{926FA9B9} }
+      its(:exit_status) { is_expected.to be_one_of [0, 2] }
     end
   end
 end
