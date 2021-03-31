@@ -24,3 +24,13 @@ def transfer_file(file, destination)
   content = File.read(filepath)
   write_file(content, destination)
 end
+
+RSpec::Matchers.define(:be_one_of) do |expected|
+  match do |actual|
+    expected.include?(actual)
+  end
+
+  failure_message do |actual|
+    "expected one of #{expected}, got #{actual}"
+  end
+end
