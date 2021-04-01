@@ -116,9 +116,9 @@ Puppet::Type.type(:gnupg_key).provide(:gnupg) do
     begin
       output = Puppet::Util::Execution.execute(command, uid: user_id, failonfail: true, custom_environment: gpgenv(resource))
       if output =~ %r{unable to fetch}
-        raise Puppet::ExecutionFailure
+        raise Puppet::ExecutionFailure, output
       end
-    rescue Puppet::ExecutionFailure
+    rescue Puppet::ExecutionFailure => e
       raise Puppet::Error, "Error while importing key #{resource[:key_id]} from #{resource[:key_source]}:\n#{e}"
     end
   end
