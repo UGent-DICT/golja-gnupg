@@ -65,7 +65,7 @@ describe 'install gnupg keys' do
         ensure     => 'present',
         user       => 'root',
         key_type   => 'public',
-        key_server => 'hkp://keys.openpgp.org/',
+        key_server => 'hkp://pool.sks-keyservers.net:80/',
         key_id     => '4FDE866E31AF4DA20D8908824C589D9E8E04A1D3',
       }
     EOS
