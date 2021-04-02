@@ -1,3 +1,7 @@
+2021-04-02 - Jan Vansteenkiste <jan@vstone.eu> - 2.0.1
+* https and http support now both use the same method: fixes http->https redirects
+* its difficult to find working upstream keyservers for the tests...
+
 2021-04-01 - Jan Vansteenkiste <jan@vstone.eu> - 2.0.0
 * Drop support for puppet < 6
 * Merge multiple pull requests:
