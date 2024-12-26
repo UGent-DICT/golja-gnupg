@@ -1,4 +1,5 @@
-# PRIVATE CLASS: do not use directly
+# @summary Supply os defaults
+# @private
 class gnupg::params {
 
   $package_ensure = 'present'
